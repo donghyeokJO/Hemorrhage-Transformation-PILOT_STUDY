@@ -1,17 +1,10 @@
-import pickle
 import warnings
 
 import pandas as pd
+import numpy as np
 
-from sklearn.model_selection import (
-    LeaveOneOut,
-    cross_val_score,
-    train_test_split,
-    RandomizedSearchCV,
-    GridSearchCV,
-)
+from sklearn.model_selection import LeaveOneOut
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from data_process import load_data
 from constants import SELECTED_FEATURES
 
@@ -23,46 +16,51 @@ class GBM:
 
         self.data = self.data.loc[:, self.data.columns.isin(SELECTED_FEATURES)]
 
-        self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(
-            self.data,
-            self.labels,
-            test_size=0.2,
-            shuffle=True,
-            stratify=labels,
-            random_state=777,
-        )
-
         self.model = GradientBoostingClassifier(
-            random_state=777, max_depth=10, learning_rate=0.1
+            random_state=47717110, learning_rate=0.01
         )
 
-        self.cv = LeaveOneOut()
+        self.loo = LeaveOneOut()
 
-    def train(self):
-        self.model.fit(self.x_train, self.y_train)
+        self.train_score = list()
+        self.test_result = list()
 
-        print(f"Train Score : {self.model.score(self.x_train, self.y_train)}")
-        print(f"Test  Score : {self.model.score(self.x_test, self.y_test)}")
+    def train_loo(self):
+        for train_index, test_index in self.loo.split(self.data):
+            x_train, x_test = self.data.iloc[train_index], self.data.iloc[test_index]
+            y_train, y_test = (
+                self.labels.iloc[train_index],
+                self.labels.iloc[test_index],
+            )
+
+            self.model.fit(x_train, y_train)
+
+            train_score = self.model.score(x_train, y_train)
+            test_result = self.model.score(x_test, y_test)
+
+            print(
+                f"""
+                Trial : {test_index}
+                Train Score: {train_score}
+                Test Result: {"Success" if test_result >= 1.0 else "fail"}
+                """
+            )
+
+            self.train_score.append(train_score)
+            self.test_result.append(test_result)
+
         print(
-            f"CV Score    : {cross_val_score(self.model, self.data, self.labels, cv = self.cv).mean()}"
+            f"""
+            Total Result 
+            
+            Train Score : {np.mean(self.train_score)}
+            Test Score  : {np.mean(self.test_result)}
+            """
         )
-
-        pred = self.model.predict(self.data)
-        acc = accuracy_score(self.labels, pred)
-        print(f"Whole ACC   : {acc}")
-
-        con_mat = confusion_matrix(self.labels, pred)
-        report = classification_report(self.labels, pred)
-
-        print(con_mat)
-        print(report)
-
-        with open("model_pureGBM.txt", "wb") as f:
-            pickle.dump({"model": self.model}, f)
 
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     data, labels = load_data()
     gbm = GBM(data, labels)
-    gbm.train()
+    gbm.train_loo()

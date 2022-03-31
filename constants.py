@@ -20,3 +20,26 @@ SELECTED_FEATURES = [
     "Mu",
     "Skewness",
 ]
+
+SELECTED_FEATURES_XG = [
+    "toast",
+    "htx_statin",
+    "tx_throm",
+    "rtpa",
+    "wbc",
+    "hct",
+    "tc",
+    "ldl",
+    "ha1c",
+    "crp",
+    "sbp",
+    "HU32",
+    "HU56",
+    "HU58",
+    "HU59",
+    "HU63",
+    "HU67",
+    "HU71",
+    "HU77",
+    "Skewness",
+]

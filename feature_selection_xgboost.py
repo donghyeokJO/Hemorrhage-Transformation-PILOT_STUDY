@@ -3,7 +3,7 @@ import warnings
 import pandas as pd
 
 from sklearn.feature_selection import RFE
-from sklearn.ensemble import GradientBoostingClassifier
+from xgboost import XGBClassifier
 from data_process import load_data
 
 
@@ -12,7 +12,7 @@ class FeatureSelection:
         self.data = data
         self.labels = labels
 
-        self.model = GradientBoostingClassifier(random_state=777)
+        self.model = XGBClassifier(random_state=777)
 
         self.rfe = RFE(self.model, n_features_to_select=20)
 

@@ -1,5 +1,9 @@
 import warnings
 
+warnings.filterwarnings(action="ignore")
+warnings.simplefilter(action="ignore", category=FutureWarning)
+
+
 import pandas as pd
 
 from sklearn.preprocessing import MinMaxScaler
@@ -9,8 +13,10 @@ def load_excel_data(
     data_path: str = "data/data_sampling_emr.xlsx",
 ) -> pd.DataFrame:
 
-    dataset = pd.read_excel(data_path, index_col=[0, 1])
-
+    dataset = pd.read_excel(data_path)
+    dataset = dataset.astype({"hosp_id": "str"})
+    dataset = dataset.set_index(["reg_num", "hosp_id"])
+    # print(dataset)
     drop_columns = [
         "Study Date",
         "Manufacturer's Model Name",
@@ -83,6 +89,8 @@ def load_spss_data(data_path: str = "data/pilot_study_HTf.sav") -> pd.DataFrame:
         "slice_end",
     ]
 
+    dataset = dataset.astype({"hosp_id": "int"})
+    dataset = dataset.astype({"hosp_id": "str"})
     dataset = dataset.set_index(["reg_num", "hosp_id"])
 
     dataset.drop(drop_columns, axis=1, inplace=True)
@@ -103,13 +111,15 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     scaler = MinMaxScaler()
 
     new_dataset = pd.DataFrame(
-        scaler.fit_transform(new_dataset), columns=columns, index=new_dataset.index
+        scaler.fit_transform(new_dataset),
+        columns=columns,
+        index=new_dataset.index,
     )
 
-    # new_dataset = new_dataset.set_index(["reg_num", "hosp_id"])
     return new_dataset, labels
 
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     new_dataset, labels = load_data()
+    # print(new_dataset.loc[["hosp_id"]])
