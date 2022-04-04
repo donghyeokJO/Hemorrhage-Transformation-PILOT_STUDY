@@ -1,30 +1,36 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.model_selection import LeaveOneOut, GridSearchCV
+from sklearn.model_selection import LeaveOneOut
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, roc_auc_score
-from xgboost import XGBClassifier
 from data_process import load_data
-from constants import SELECTED_FEATURES_XG
+from constants import SELECTED_FEATURES_LOGISTIC_REGRESSION
 from plot_roc import plot_roc_curve
 
 
-class XGBM:
+class LOGIT:
     def __init__(self, data: pd.DataFrame, labels: pd.DataFrame):
         self.data = data
         self.labels = labels
 
-        # self.data = self.data.loc[:, self.data.columns.isin(SELECTED_FEATURES_XG)]
+        a = ["PI4", "HU_3", "rtpa", "wbc", "ldl", "crp"]
+        # self.data = self.data.loc[
+        #     :, self.data.columns.isin(SELECTED_FEATURES_LOGISTIC_REGRESSION)
+        # ]
+        self.data = self.data.loc[:, self.data.columns.isin(a)]
 
-        self.model = XGBClassifier(
-            use_label_encoder=False,
-            n_estimators=400,
-            eval_metric="logloss",
-            random_state=19980811,
-            colsample_bytree=0.9,
-            colsample_bylevel=0.9,
-            nthread=4,
-            learning_rate=0.1,
+        # 19980811
+        self.model = LogisticRegression(
+            random_state=4771,
+            max_iter=600,
+            # n_jobs=4,
+            C=10,
+            fit_intercept=False
+            # penalty="none",
+            # solver="sag"
+            # penalty="l1",
+            # solver="liblinear",
         )
 
         self.loo = LeaveOneOut()
@@ -78,28 +84,11 @@ class XGBM:
         idx = np.argmax(J)
         best_threshold = thresholds[idx]
 
-        plot_roc_curve(fper, tper, score, best_threshold, idx, "XGBoost")
-
-    def grid_search(self):
-        model = XGBClassifier()
-
-        param_grid = {
-            "use_label_encoder": [False],
-            "random_state": [x for x in range(1, 101)],
-            "learning_rate": [0.05, 0.1, 0.2],
-        }
-
-        grid = GridSearchCV(model, param_grid, cv=self.loo, n_jobs=4)
-
-        grid.fit(self.data, self.labels.values.ravel(), eval_metric="logloss")
-
-        print("Best CV Score", grid.best_score_)
-        print("Best Params", grid.best_params_)
+        plot_roc_curve(fper, tper, score, best_threshold, idx, "LOGIT")
 
 
 if __name__ == "__main__":
     data, labels = load_data()
-    xgb = XGBM(data, labels)
-    xgb.train_loo()
-    xgb.plotting()
-    # xgb.grid_search()
+    logit = LOGIT(data, labels)
+    logit.train_loo()
+    logit.plotting()

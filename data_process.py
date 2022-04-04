@@ -7,6 +7,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 import pandas as pd
 
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
 
 
 def load_excel_data(
@@ -98,6 +99,45 @@ def load_spss_data(data_path: str = "data/pilot_study_HTf.sav") -> pd.DataFrame:
     return dataset
 
 
+def pca_data(new_dataset: pd.DataFrame) -> pd.DataFrame:
+    hu_columns = ["HU" + str(x) for x in range(0, 80)] + ["Mu", "Skewness", "Kurtosis"]
+    hu_df = new_dataset.loc[:, new_dataset.columns.isin(hu_columns)]
+
+    pca = PCA(n_components=5)
+    hu_principal = pca.fit_transform(hu_df)
+    # print(hu_principal)
+
+    for i in range(0, 5):
+        new_dataset.insert(i, "HU_" + str(i), hu_principal[:, i])
+    new_dataset.drop(hu_columns, axis=1, inplace=True)
+
+    personal_info = [
+        "male",
+        "age",
+        "bmi",
+        "hx_str",
+        "hx_htn",
+        "hx_dm",
+        "smok",
+        "hx_af",
+        "hx_hl",
+        "htx_plt",
+        "htx_coa",
+        "htx_htn",
+        "htx_statin",
+        "htx_dm",
+    ]
+    pi_df = new_dataset.loc[:, new_dataset.columns.isin(personal_info)]
+    pi_pca = PCA(n_components=5)
+    pi_principal = pi_pca.fit_transform(pi_df)
+
+    for i in range(0, 5):
+        new_dataset.insert(i, "PI" + str(i), pi_principal[:, i])
+    new_dataset.drop(personal_info, axis=1, inplace=True)
+
+    return new_dataset
+
+
 def load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     excel_data = load_excel_data()
     spss_data = load_spss_data()
@@ -116,10 +156,15 @@ def load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
         index=new_dataset.index,
     )
 
+    new_dataset = pca_data(new_dataset)
+
     return new_dataset, labels
 
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     new_dataset, labels = load_data()
+    print(new_dataset.shape)
+    # new_dataset, labels = load_data()
+    # print(new_dataset.head())
     # print(new_dataset.loc[["hosp_id"]])

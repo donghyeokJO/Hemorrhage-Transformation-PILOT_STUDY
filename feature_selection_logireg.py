@@ -3,7 +3,7 @@ import warnings
 import pandas as pd
 
 from sklearn.feature_selection import RFE
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
 from data_process import load_data
 
 
@@ -12,9 +12,9 @@ class FeatureSelection:
         self.data = data
         self.labels = labels
 
-        self.model = GradientBoostingClassifier()
+        self.model = LogisticRegression()
 
-        self.rfe = RFE(self.model, n_features_to_select=6)
+        self.rfe = RFE(self.model, n_features_to_select=7)
 
         self.rfe.fit(self.data, self.labels)
 

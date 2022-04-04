@@ -43,3 +43,27 @@ SELECTED_FEATURES_XG = [
     "HU77",
     "Skewness",
 ]
+
+
+SELECTED_FEATURES_LOGISTIC_REGRESSION = [
+    "male",
+    "age",
+    "hx_dm",
+    "htx_htn",
+    "htx_statin",
+    "htx_dm",
+    "rtpa",
+    "wbc",
+    "ldl",
+    "bun",
+    "fbs",
+    "pt",
+    "crp",
+    "HU32",
+    "HU34",
+    "HU56",
+    "HU57",
+    "HU58",
+    "HU59",
+    "Skewness",
+]
