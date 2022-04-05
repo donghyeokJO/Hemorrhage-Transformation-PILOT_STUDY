@@ -2,33 +2,27 @@ import pandas as pd
 import numpy as np
 
 from sklearn.model_selection import LeaveOneOut
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, roc_auc_score
+from catboost import CatBoostClassifier
 from data_process import load_data
 from plot_roc import plot_roc_curve
 
 
-class LOGIT:
+class CatGBM:
     def __init__(self, data: pd.DataFrame, labels: pd.DataFrame):
         self.data = data
         self.labels = labels
 
-        logit_columns = ["PI4", "HU_3", "rtpa", "wbc", "ldl", "crp"]
-        self.data = self.data.loc[:, self.data.columns.isin(logit_columns)]
+        catboost_columns = ["HU_1", "tx_throm", "rtpa", "wbc", "hct", "ldl"]
+        self.data = self.data.loc[:, self.data.columns.isin(catboost_columns)]
 
-        # 19980811
-        self.model = LogisticRegression(
+        self.model = CatBoostClassifier(
+            learning_rate=0.2,
+            subsample=0.9,
+            min_data_in_leaf=3,
             random_state=4771,
-            max_iter=600,
-            # n_jobs=4,
-            C=10,
-            fit_intercept=False
-            # penalty="none",
-            # solver="sag"
-            # penalty="l1",
-            # solver="liblinear",
+            # random_state=42,
         )
-
         self.loo = LeaveOneOut()
 
         self.train_score = list()
@@ -43,7 +37,7 @@ class LOGIT:
                 self.labels.iloc[test_index],
             )
 
-            self.model.fit(x_train, y_train)
+            self.model.fit(x_train, y_train, verbose=False)
 
             train_score = self.model.score(x_train, y_train)
             test_result = self.model.score(x_test, y_test)
@@ -80,11 +74,11 @@ class LOGIT:
         idx = np.argmax(J)
         best_threshold = thresholds[idx]
 
-        plot_roc_curve(fper, tper, score, best_threshold, idx, "LOGIT")
+        plot_roc_curve(fper, tper, score, best_threshold, idx, "Cat GBM")
 
 
 if __name__ == "__main__":
     data, labels = load_data()
-    logit = LOGIT(data, labels)
-    logit.train_loo()
-    logit.plotting()
+    catgbm = CatGBM(data, labels)
+    catgbm.train_loo()
+    catgbm.plotting()

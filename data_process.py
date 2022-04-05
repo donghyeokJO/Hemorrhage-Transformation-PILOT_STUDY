@@ -165,6 +165,3 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     new_dataset, labels = load_data()
     print(new_dataset.shape)
-    # new_dataset, labels = load_data()
-    # print(new_dataset.head())
-    # print(new_dataset.loc[["hosp_id"]])

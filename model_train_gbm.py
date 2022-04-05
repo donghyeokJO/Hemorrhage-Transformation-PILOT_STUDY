@@ -8,7 +8,6 @@ from sklearn.model_selection import LeaveOneOut, GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import roc_curve, roc_auc_score
 from data_process import load_data
-from constants import SELECTED_FEATURES
 from plot_roc import plot_roc_curve
 
 
@@ -20,9 +19,8 @@ class GBM:
         self.labels = labels
         self.random_state = random_state
 
-        a = ["PI4", "HU_1", "rtpa", "wbc", "hct", "ldl"]
-        # self.data = self.data.loc[:, self.data.columns.isin(SELECTED_FEATURES)]
-        self.data = self.data.loc[:, self.data.columns.isin(a)]
+        gradient_boost_columns = ["PI4", "HU_1", "rtpa", "wbc", "hct", "ldl"]
+        self.data = self.data.loc[:, self.data.columns.isin(gradient_boost_columns)]
 
         self.model = GradientBoostingClassifier(
             random_state=self.random_state,

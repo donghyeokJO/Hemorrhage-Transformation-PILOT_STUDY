@@ -3,7 +3,7 @@ import warnings
 import pandas as pd
 
 from sklearn.feature_selection import RFE
-from xgboost import XGBClassifier
+from catboost import CatBoostClassifier
 from data_process import load_data
 
 
@@ -12,9 +12,9 @@ class FeatureSelection:
         self.data = data
         self.labels = labels
 
-        self.model = XGBClassifier()
+        self.model = CatBoostClassifier(verbose=False)
 
-        self.rfe = RFE(self.model, n_features_to_select=7)
+        self.rfe = RFE(self.model, n_features_to_select=6)
 
         self.rfe.fit(self.data, self.labels)
 
@@ -34,3 +34,10 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore")
     data, labels = load_data()
     fs = FeatureSelection(data, labels)
+
+    """
+    ['wbc', 'hb', 'hct', 'plt', 'tc', 'tg', 'hdl', 'ldl', 'HU33', 'HU59', 'HU66', 'HU67', 'HU68'
+    , 'HU69', 'HU70', 'HU71', 'HU72', 'HU73', 'Mu', 'Skewness']
+
+    same with pure gradient boosting
+    """

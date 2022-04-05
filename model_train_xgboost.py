@@ -1,11 +1,10 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.model_selection import LeaveOneOut, GridSearchCV
+from sklearn.model_selection import LeaveOneOut
 from sklearn.metrics import roc_curve, roc_auc_score
 from xgboost import XGBClassifier
 from data_process import load_data
-from constants import SELECTED_FEATURES_XG
 from plot_roc import plot_roc_curve
 
 
@@ -14,17 +13,16 @@ class XGBM:
         self.data = data
         self.labels = labels
 
-        # self.data = self.data.loc[:, self.data.columns.isin(SELECTED_FEATURES_XG)]
+        xgboost_columns = ["PI4", "HU_1", "rtpa", "wbc", "hct", "ldl", "ha1c"]
+        self.data = self.data.loc[:, self.data.columns.isin(xgboost_columns)]
 
         self.model = XGBClassifier(
-            use_label_encoder=False,
-            n_estimators=400,
-            eval_metric="logloss",
-            random_state=19980811,
-            colsample_bytree=0.9,
-            colsample_bylevel=0.9,
-            nthread=4,
-            learning_rate=0.1,
+            n_estimators=500,
+            learning_rate=1.7,
+            gamma=0.1,
+            subsample=0.7,
+            colsample_bytree=0.8,
+            reg_alpha=0.01,
         )
 
         self.loo = LeaveOneOut()
@@ -41,7 +39,7 @@ class XGBM:
                 self.labels.iloc[test_index],
             )
 
-            self.model.fit(x_train, y_train)
+            self.model.fit(x_train, y_train, verbose=False, eval_metric="error")
 
             train_score = self.model.score(x_train, y_train)
             test_result = self.model.score(x_test, y_test)
@@ -79,22 +77,6 @@ class XGBM:
         best_threshold = thresholds[idx]
 
         plot_roc_curve(fper, tper, score, best_threshold, idx, "XGBoost")
-
-    def grid_search(self):
-        model = XGBClassifier()
-
-        param_grid = {
-            "use_label_encoder": [False],
-            "random_state": [x for x in range(1, 101)],
-            "learning_rate": [0.05, 0.1, 0.2],
-        }
-
-        grid = GridSearchCV(model, param_grid, cv=self.loo, n_jobs=4)
-
-        grid.fit(self.data, self.labels.values.ravel(), eval_metric="logloss")
-
-        print("Best CV Score", grid.best_score_)
-        print("Best Params", grid.best_params_)
 
 
 if __name__ == "__main__":

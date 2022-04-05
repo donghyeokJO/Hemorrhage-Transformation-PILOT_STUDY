@@ -12,9 +12,9 @@ class FeatureSelection:
         self.data = data
         self.labels = labels
 
-        self.model = LGBMClassifier(random_state=777)
+        self.model = LGBMClassifier(min_child_samples=5)
 
-        self.rfe = RFE(self.model, n_features_to_select=20)
+        self.rfe = RFE(self.model, n_features_to_select=6)
 
         self.rfe.fit(self.data, self.labels)
 
